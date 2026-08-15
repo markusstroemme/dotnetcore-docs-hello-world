@@ -1,19 +1,72 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
 
+@using dotnetcoresample.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
+
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
 
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary"
+        @onclick="IncrementCount">
+    Click me
+</button>
 
 @code {
-    private int currentCount = 0;
+    private int currentCount;
 
-    private void IncrementCount()
+    protected override async Task OnInitializedAsync()
     {
-        currentCount++;
+        await using var db =
+            await DbFactory.CreateDbContextAsync();
+
+        var counter =
+            await db.CounterStates.FindAsync(1);
+
+        if (counter is null)
+        {
+            counter = new CounterState
+            {
+                Id = 1,
+                Count = 0
+            };
+
+            db.CounterStates.Add(counter);
+            await db.SaveChangesAsync();
+        }
+
+        currentCount = counter.Count;
+    }
+
+    private async Task IncrementCount()
+    {
+        await using var db =
+            await DbFactory.CreateDbContextAsync();
+
+        var counter =
+            await db.CounterStates.FindAsync(1);
+
+        if (counter is null)
+        {
+            counter = new CounterState
+            {
+                Id = 1,
+                Count = 1
+            };
+
+            db.CounterStates.Add(counter);
+        }
+        else
+        {
+            counter.Count++;
+        }
+
+        await db.SaveChangesAsync();
+
+        currentCount = counter.Count;
     }
 }
