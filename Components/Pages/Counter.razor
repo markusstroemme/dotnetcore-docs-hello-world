@@ -11,27 +11,21 @@
 
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary"
-        @onclick="IncrementCount">
-    Click me
-</button>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
     private int currentCount;
 
     protected override async Task OnInitializedAsync()
     {
-        await using var db =
-            await DbFactory.CreateDbContextAsync();
+        await using var db = await DbFactory.CreateDbContextAsync();
 
-        var counter =
-            await db.CounterStates.FindAsync(1);
+        var counter = await db.CounterStates.FirstOrDefaultAsync();
 
         if (counter is null)
         {
             counter = new CounterState
             {
-                Id = 1,
                 Count = 0
             };
 
@@ -44,17 +38,14 @@
 
     private async Task IncrementCount()
     {
-        await using var db =
-            await DbFactory.CreateDbContextAsync();
+        await using var db = await DbFactory.CreateDbContextAsync();
 
-        var counter =
-            await db.CounterStates.FindAsync(1);
+        var counter = await db.CounterStates.FirstOrDefaultAsync();
 
         if (counter is null)
         {
             counter = new CounterState
             {
-                Id = 1,
                 Count = 1
             };
 
