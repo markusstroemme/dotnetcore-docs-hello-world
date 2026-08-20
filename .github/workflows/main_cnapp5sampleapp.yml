@@ -51,12 +51,17 @@ jobs:
 
     strategy:
       matrix:
-        app-name:
-          - cnapp5-01-app-jou7fcojzfbam
-          - cnapp5-02-app-k3acalwvqupjq
-          - cnapp5-03-app-fbspsu64udrbo
-          - cnapp5-04-app-erniiql7yrxle
-          - cnapp5-05-app-5x7jd6t24ewas
+        include:
+          - app-name: cnapp5-01-app-jou7fcojzfbam
+            resource-group: cnapp5-01-rg
+          - app-name: cnapp5-02-app-k3acalwvqupjq
+            resource-group: cnapp5-02-rg
+          - app-name: cnapp5-03-app-fbspsu64udrbo
+            resource-group: cnapp5-03-rg
+          - app-name: cnapp5-04-app-erniiql7yrxle
+            resource-group: cnapp5-04-rg
+          - app-name: cnapp5-05-app-5x7jd6t24ewas
+            resource-group: cnapp5-05-rg
 
     permissions:
       id-token: write
@@ -79,5 +84,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ matrix.app-name }}
+          resource-group: ${{ matrix.resource-group }}
           slot-name: Production
           package: .
