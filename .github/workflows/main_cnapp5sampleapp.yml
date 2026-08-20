@@ -1,53 +1,15 @@
-name: Build and deploy ASP.Net Core app to Azure Web App - cnapp5sampleapp
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: windows-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.x'
-
-      - name: Restore
-        run: dotnet restore --runtime win-x64
-
-      - name: Build with dotnet
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Install EF Core tools
-        run: dotnet tool install --global dotnet-ef --version 10.*
-
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-
-      - name: Restore for migration bundle
-        run: dotnet restore --runtime win-x64
-
-      - name: Create migration bundle
-        run: dotnet ef migrations bundle --runtime win-x64 --force -o "${{env.DOTNET_ROOT}}/myapp/migrationsbundle.exe"
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
-
   deploy:
     runs-on: windows-latest
     needs: build
+
+    strategy:
+      matrix:
+        app-name:
+          - cnapp5-01-app-jou7fcojzfbam
+          - cnapp5-02-app-k3acalwvqupjq
+          - cnapp5-03-app-fbspsu64udrbo
+          - cnapp5-04-app-erniiql7yrxle
+          - cnapp5-05-app-5x7jd6t24ewas
 
     permissions:
       id-token: write
@@ -66,10 +28,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F61348EC979A46BEA65E045323C81EBD }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_95E6FABB9E25411FB3BBFA639ED8F08A }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to ${{ matrix.app-name }}
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'cnapp5sampleapp'
-          slot-name: 'Production'
+          app-name: ${{ matrix.app-name }}
+          slot-name: Production
           package: .
